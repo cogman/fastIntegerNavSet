@@ -186,7 +186,7 @@ public class FastNavIntSetTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testAddAll1() {
-		FastNavIntSet q = FastNavIntSet.create();
+		NavigableSet<Integer> q = FastNavIntSet.create();
 		q.addAll(null);
 	}
 

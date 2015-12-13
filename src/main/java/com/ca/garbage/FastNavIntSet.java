@@ -20,17 +20,13 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	@Nonnull
 	private int[] values;
 
-	private FastNavIntSet(int[] values, int size, boolean forward) {
+	private FastNavIntSet(int[] values, boolean forward) {
 		this.forward = forward;
+		this.values = new int[8];
+		this.size = 0;
 		if (values != null && values.length > 0) {
-			this.values = Arrays.copyOf(values, size);
+			addAll(values);
 		}
-		else {
-			this.values = new int[8];
-		}
-		Arrays.sort(this.values, 0, size);
-
-		this.size = size;
 	}
 
 	private FastNavIntSet(FastNavIntSet fastNavIntSet, boolean forward) {
@@ -40,12 +36,11 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	}
 
 	public static FastNavIntSet create(int[] values, boolean forward) {
-		if (values == null) {
-			return new FastNavIntSet(values, 0, forward);
-		}
-		else {
-			return new FastNavIntSet(values, values.length, forward);
-		}
+		return new FastNavIntSet(values, forward);
+	}
+
+	public static FastNavIntSet create() {
+		return new FastNavIntSet((int[]) null, true);
 	}
 
 	public static FastNavIntSet create(int... values) {
@@ -59,11 +54,7 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	public static FastNavIntSet fromIntegerArray(Integer[] values, boolean forward) {
 		int[] newValues = new int[values.length];
 		for (int i = 0; i < values.length; i++) {
-			Integer value = values[i];
-			if (value == null) {
-				throw new NullPointerException("Cannot contain null!");
-			}
-			newValues[i] = value;
+			newValues[i] = values[i];
 		}
 		return create(newValues, forward);
 	}
@@ -73,7 +64,9 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	}
 
 	public static FastNavIntSet fromCollection(Collection<Integer> values, boolean forward) {
-		return fromIntegerArray(values.toArray(new Integer[values.size()]), forward);
+		FastNavIntSet set = create(forward);
+		set.addAll(values);
+		return set;
 	}
 
 	public static FastNavIntSet fromCollection(Collection<Integer> values) {
@@ -134,7 +127,16 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 
 	@Override
 	public boolean addAll(Collection<? extends Integer> c) {
-		Integer[] toArray = c.toArray(new Integer[c.size()]);
+		int[] collectionValues = new int[c.size()];
+		int i = 0;
+		for (Integer value : c) {
+			collectionValues[i] = value;
+			++i;
+		}
+		return addAll(collectionValues);
+	}
+
+	public final boolean addAll(int[] toArray) {
 		Arrays.sort(toArray);
 		int[] newValues = new int[size + toArray.length];
 		int newSize = 0;
@@ -481,10 +483,15 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	}
 
 	private void removeAtIndex(int index) {
-		for (int i = index; i < size - 1; i++) {
-			values[i] = values[i + 1];
+		if (index == size - 1) {
+			--size;
 		}
-		--size;
+		else {
+			for (int i = index; i < size - 1; i++) {
+				values[i] = values[i + 1];
+			}
+			--size;
+		}
 	}
 
 	@Override
@@ -559,13 +566,13 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 			return -1;
 		}
 		int low = 0;
-		int high = (size / CHUNK_SIZE);
+		int high = ((size - 1) / CHUNK_SIZE);
 
 		int chunkCheck = Integer.MIN_VALUE;
 
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
-			chunkCheck = searchChunk(value, low * CHUNK_SIZE);
+			chunkCheck = searchChunk(value, mid * CHUNK_SIZE);
 
 			if (chunkCheck == Integer.MAX_VALUE) {
 				low = mid + 1;
@@ -587,20 +594,42 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	 * on no match, negative index on match
 	 */
 	private int searchChunk(int value, int chunkStart) {
-		int chunkEnd = CHUNK_SIZE + chunkStart > size - 1 ? size - 1 : CHUNK_SIZE + chunkStart;
-		if (values[chunkEnd] == value) {
-			return chunkEnd;
-		}
-		if (value > values[chunkEnd]) {
-			return Integer.MAX_VALUE;
-		}
-		if (value == values[chunkStart]) {
+		int[] vals = values;
+		if (value == vals[chunkStart]) {
 			return chunkStart;
 		}
-		if (value < values[chunkStart]) {
+		if (value < vals[chunkStart]) {
 			return Integer.MIN_VALUE;
 		}
+		int chunkEnd = CHUNK_SIZE + chunkStart > size - 1 ? size - 1 : CHUNK_SIZE + chunkStart;
+		if (vals[chunkEnd] == value) {
+			return chunkEnd;
+		}
+		if (value > vals[chunkEnd]) {
+			return Integer.MAX_VALUE;
+		}
+		return binarySearch(vals, chunkStart, chunkEnd, value);
+	}
 
-		return Arrays.binarySearch(values, chunkStart, chunkEnd, value);
+	private static int binarySearch(final int[] a, int fromIndex, int toIndex,
+																	int key) {
+		int low = fromIndex;
+		int high = toIndex - 1;
+
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+			int midVal = a[mid];
+
+			if (midVal < key) {
+				low = mid + 1;
+			}
+			else if (midVal > key) {
+				high = mid - 1;
+			}
+			else {
+				return mid; // key found
+			}
+		}
+		return -(low + 1);  // key not found.
 	}
 }
