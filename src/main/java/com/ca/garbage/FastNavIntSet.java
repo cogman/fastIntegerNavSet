@@ -29,6 +29,24 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 		}
 	}
 
+	private FastNavIntSet(SortedSet<Integer> set, boolean forward) {
+		if (set.comparator() == null || set.comparator().compare(1, 2) < 0) {
+			this.values = new int[set.size()];
+			int i = 0;
+			for (Integer setValue : set) {
+				values[i] = setValue;
+				++i;
+			}
+			this.size = set.size();
+		}
+		else {
+			this.size = 0;
+			this.values = new int[0];
+			addAll(set);
+		}
+		this.forward = forward;
+	}
+
 	private FastNavIntSet(FastNavIntSet fastNavIntSet, boolean forward) {
 		this.values = Arrays.copyOf(fastNavIntSet.values, fastNavIntSet.size);
 		this.size = fastNavIntSet.size;
@@ -64,13 +82,29 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	}
 
 	public static FastNavIntSet fromCollection(Collection<Integer> values, boolean forward) {
-		FastNavIntSet set = create(forward);
-		set.addAll(values);
-		return set;
+		if (values instanceof FastNavIntSet) {
+			return new FastNavIntSet((FastNavIntSet) values, forward);
+		}
+		else if (values instanceof SortedSet) {
+			return new FastNavIntSet((SortedSet<Integer>) values, forward);
+		}
+		else {
+			FastNavIntSet set = create(forward);
+			set.addAll(values);
+			return set;
+		}
 	}
 
 	public static FastNavIntSet fromCollection(Collection<Integer> values) {
 		return fromCollection(values, true);
+	}
+
+	public static FastNavIntSet fromCollection(SortedSet<Integer> values) {
+		return fromCollection(values, true);
+	}
+
+	public static FastNavIntSet fromCollection(SortedSet<Integer> values, boolean forward) {
+		return new FastNavIntSet(values, forward);
 	}
 
 	public static FastNavIntSet fromCollection(FastNavIntSet values, boolean forward) {
@@ -513,7 +547,42 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		int[] collectionValues = new int[c.size()];
+		int i = 0;
+		for (Object value : c) {
+			collectionValues[i] = (Integer) value;
+			++i;
+		}
+		return removeAll(collectionValues);
+	}
+
+	public boolean removeAll(int[] valuesToRemove) {
+		Arrays.sort(valuesToRemove);
+		int newSize = size;
+		int[] newValues = new int[values.length];
+		int valuesIndex = 0;
+		int valuesToRemoveIndex = 0;
+		int i = 0;
+		while (valuesIndex < size) {
+			while (valuesToRemoveIndex < valuesToRemove.length
+						 && valuesIndex < size
+						 && valuesToRemove[valuesToRemoveIndex] <= values[valuesIndex]) {
+				if (valuesToRemove[valuesToRemoveIndex] == values[valuesIndex]) {
+					++valuesIndex;
+					--newSize;
+				}
+				++valuesToRemoveIndex;
+			}
+			if (valuesIndex < size) {
+				newValues[i] = values[valuesIndex];
+			}
+			++valuesIndex;
+			++i;
+		}
+		boolean changed = newSize != size;
+		size = newSize;
+		values = newValues;
+		return changed;
 	}
 
 	@Override

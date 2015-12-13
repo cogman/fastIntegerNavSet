@@ -14,7 +14,7 @@ public class Main {
 		benchmark(() -> new TreeSet<>(), "constructor treeset", 500, TimeUnit.MILLISECONDS, 3);
 
 		Set<Integer> set = new LinkedHashSet<>();
-		int items = 10000;
+		int items = 500;
 		for (int i = 0; i < items; i++) {
 			set.add(i);
 		}
