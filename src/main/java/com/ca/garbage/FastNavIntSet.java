@@ -559,7 +559,7 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 			return -1;
 		}
 		int low = 0;
-		int high = (size / CHUNK_SIZE) + 1;
+		int high = (size / CHUNK_SIZE);
 
 		int chunkCheck = Integer.MIN_VALUE;
 
