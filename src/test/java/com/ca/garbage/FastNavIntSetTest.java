@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
@@ -23,31 +22,24 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-public class FastNavIntSetTest
-{
+public class FastNavIntSetTest {
 	/**
 	 * The number of elements to place in collections, arrays, etc.
 	 */
 	static final int SIZE = 20;
 
-	static class MyReverseComparator implements Comparator<Integer> {
-		@Override
-        public int compare(Integer x, Integer y) {
-            return (y).compareTo(x);
-        }
-    }
-
 	/**
 	 * Returns a new set of given size containing consecutive Integers 0 ... n.
 	 */
-	private FastNavIntSet populatedSet(int n)
-	{
+	private FastNavIntSet populatedSet(int n) {
 		FastNavIntSet q = FastNavIntSet.create();
 		assertTrue(q.isEmpty());
-		for (int i = n - 1; i >= 0; i -= 2)
+		for (int i = n - 1; i >= 0; i -= 2) {
 			assertTrue(q.add(new Integer(i)));
-		for (int i = (n & 1); i < n; i += 2)
+		}
+		for (int i = (n & 1); i < n; i += 2) {
 			assertTrue(q.add(new Integer(i)));
+		}
 		assertFalse(q.isEmpty());
 		assertEquals(n, q.size());
 		return q;
@@ -56,8 +48,7 @@ public class FastNavIntSetTest
 	/**
 	 * Returns a new set of first 5 ints.
 	 */
-	private FastNavIntSet set5()
-	{
+	private FastNavIntSet set5() {
 		FastNavIntSet q = FastNavIntSet.create(1, 2, 3, 4, 5);
 		assertEquals(5, q.size());
 		return q;
@@ -67,38 +58,35 @@ public class FastNavIntSetTest
 	 * A new set has unbounded capacity
 	 */
 	@Test
-	public void testConstructor1()
-	{
+	public void testConstructor1() {
 		assertEquals(0, FastNavIntSet.create().size());
 	}
 
 	/**
 	 * Initializing from null Collection throws NPE
 	 */
-	@Test(expected=NullPointerException.class)
-	public void testConstructor3()
-	{
+	@Test(expected = NullPointerException.class)
+	public void testConstructor3() {
 		FastNavIntSet.fromCollection((Collection) null);
 	}
 
 	/**
 	 * Initializing from Collection of null elements throws NPE
 	 */
-	@Test(expected=NullPointerException.class)
-	public void testConstructor4()
-	{
+	@Test(expected = NullPointerException.class)
+	public void testConstructor4() {
 		FastNavIntSet.fromCollection(Arrays.asList(new Integer[SIZE]));
 	}
 
 	/**
 	 * Initializing from Collection with some null elements throws NPE
 	 */
-	@Test(expected=NullPointerException.class)
-	public void testConstructor5()
-	{
+	@Test(expected = NullPointerException.class)
+	public void testConstructor5() {
 		Integer[] ints = new Integer[SIZE];
-		for (int i = 0; i < SIZE - 1; ++i)
+		for (int i = 0; i < SIZE - 1; ++i) {
 			ints[i] = i;
+		}
 		FastNavIntSet.fromCollection(Arrays.asList(ints));
 	}
 
@@ -106,39 +94,39 @@ public class FastNavIntSetTest
 	 * Set contains all elements of collection used to initialize
 	 */
 	@Test
-	public void testConstructor6()
-	{
+	public void testConstructor6() {
 		int[] ints = new int[SIZE];
-		for (int i = 0; i < SIZE; ++i)
+		for (int i = 0; i < SIZE; ++i) {
 			ints[i] = i;
+		}
 		FastNavIntSet q = FastNavIntSet.create(ints);
-		for (int i = 0; i < SIZE; ++i)
-			assertEquals((Integer)ints[i], q.pollFirst());
+		for (int i = 0; i < SIZE; ++i) {
+			assertEquals((Integer) ints[i], q.pollFirst());
+		}
 	}
 
 	/**
 	 * The comparator used in constructor is used
 	 */
-	@Test(expected=NullPointerException.class)
-	public void testConstructor7()
-	{
-		MyReverseComparator cmp = new MyReverseComparator();
-		FastNavIntSet q = FastNavIntSet.create(cmp);
-		assertEquals(cmp, q.comparator());
+	@Test
+	public void testConstructor7() {
+		FastNavIntSet q = FastNavIntSet.create(false);
+		assertEquals(FastNavIntSet.REVERSE, q.comparator());
 		Integer[] ints = new Integer[SIZE];
-		for (int i = 0; i < SIZE; ++i)
-			ints[i] = new Integer(i);
+		for (int i = 0; i < SIZE; ++i) {
+			ints[i] = i;
+		}
 		q.addAll(Arrays.asList(ints));
-		for (int i = SIZE - 1; i >= 0; --i)
+		for (int i = SIZE - 1; i >= 0; --i) {
 			assertEquals(ints[i], q.pollFirst());
+		}
 	}
 
 	/**
 	 * isEmpty is true before add, false after
 	 */
 	@Test
-	public void testEmpty()
-	{
+	public void testEmpty() {
 		FastNavIntSet q = FastNavIntSet.create();
 		assertTrue(q.isEmpty());
 		q.add(new Integer(1));
@@ -153,16 +141,13 @@ public class FastNavIntSetTest
 	 * size changes when elements added and removed
 	 */
 	@Test
-	public void testSize()
-	{
+	public void testSize() {
 		FastNavIntSet q = populatedSet(SIZE);
-		for (int i = 0; i < SIZE; ++i)
-		{
+		for (int i = 0; i < SIZE; ++i) {
 			assertEquals(SIZE - i, q.size());
 			q.pollFirst();
 		}
-		for (int i = 0; i < SIZE; ++i)
-		{
+		for (int i = 0; i < SIZE; ++i) {
 			assertEquals(i, q.size());
 			q.add(new Integer(i));
 		}
@@ -172,8 +157,7 @@ public class FastNavIntSetTest
 	 * add(null) throws NPE if nonempty
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testAddNull()
-	{
+	public void testAddNull() {
 		FastNavIntSet q = populatedSet(SIZE);
 		q.add(null);
 	}
@@ -182,8 +166,7 @@ public class FastNavIntSetTest
 	 * Add of comparable element fails
 	 */
 	@Test(expected = ClassCastException.class)
-	public void testAdd()
-	{
+	public void testAdd() {
 		NavigableSet q = FastNavIntSet.create();
 		assertTrue(q.add(new Long(1)));
 	}
@@ -192,8 +175,7 @@ public class FastNavIntSetTest
 	 * Add of duplicate element fails
 	 */
 	@Test
-	public void testAddDup()
-	{
+	public void testAddDup() {
 		FastNavIntSet q = FastNavIntSet.create();
 		assertTrue(q.add(0));
 		assertFalse(q.add(0));
@@ -203,8 +185,7 @@ public class FastNavIntSetTest
 	 * addAll(null) throws NPE
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testAddAll1()
-	{
+	public void testAddAll1() {
 		FastNavIntSet q = FastNavIntSet.create();
 		q.addAll(null);
 	}
@@ -213,8 +194,7 @@ public class FastNavIntSetTest
 	 * addAll of a collection with null elements throws NPE
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testAddAll2()
-	{
+	public void testAddAll2() {
 		FastNavIntSet q = FastNavIntSet.create();
 		Integer[] ints = new Integer[SIZE];
 		q.addAll(Arrays.asList(ints));
@@ -224,12 +204,12 @@ public class FastNavIntSetTest
 	 * addAll of a collection with any null elements throws NPE after possibly adding some elements
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testAddAll3()
-	{
+	public void testAddAll3() {
 		FastNavIntSet q = FastNavIntSet.create();
 		Integer[] ints = new Integer[SIZE];
-		for (int i = 0; i < SIZE - 1; ++i)
+		for (int i = 0; i < SIZE - 1; ++i) {
 			ints[i] = new Integer(i);
+		}
 		q.addAll(Arrays.asList(ints));
 	}
 
@@ -237,29 +217,28 @@ public class FastNavIntSetTest
 	 * Set contains all elements of successful addAll
 	 */
 	@Test
-	public void testAddAll5()
-	{
+	public void testAddAll5() {
 		Integer[] empty = new Integer[0];
 		Integer[] ints = new Integer[SIZE];
-		for (int i = 0; i < SIZE; ++i)
+		for (int i = 0; i < SIZE; ++i) {
 			ints[i] = new Integer(SIZE - 1 - i);
+		}
 		FastNavIntSet q = FastNavIntSet.create();
 		assertFalse(q.addAll(Arrays.asList(empty)));
 		assertTrue(q.addAll(Arrays.asList(ints)));
-		for (int i = 0; i < SIZE; ++i)
+		for (int i = 0; i < SIZE; ++i) {
 			assertEquals(new Integer(i), q.pollFirst());
+		}
 	}
 
 	/**
 	 * pollFirst succeeds unless empty
 	 */
 	@Test
-	public void testPollFirst()
-	{
+	public void testPollFirst() {
 		FastNavIntSet q = populatedSet(SIZE);
-		for (int i = 0; i < SIZE; ++i)
-		{
-			assertEquals((Integer)i, q.pollFirst());
+		for (int i = 0; i < SIZE; ++i) {
+			assertEquals((Integer) i, q.pollFirst());
 		}
 		assertNull(q.pollFirst());
 	}
@@ -268,12 +247,10 @@ public class FastNavIntSetTest
 	 * pollLast succeeds unless empty
 	 */
 	@Test
-	public void testPollLast()
-	{
+	public void testPollLast() {
 		FastNavIntSet q = populatedSet(SIZE);
-		for (int i = SIZE - 1; i >= 0; --i)
-		{
-			assertEquals((Integer)i, q.pollLast());
+		for (int i = SIZE - 1; i >= 0; --i) {
+			assertEquals((Integer) i, q.pollLast());
 		}
 		assertNull(q.pollFirst());
 	}
@@ -282,18 +259,15 @@ public class FastNavIntSetTest
 	 * remove(x) removes x and returns true if present
 	 */
 	@Test
-	public void testRemoveElement()
-	{
+	public void testRemoveElement() {
 		FastNavIntSet q = populatedSet(SIZE);
-		for (int i = 1; i < SIZE; i += 2)
-		{
+		for (int i = 1; i < SIZE; i += 2) {
 			assertTrue(q.contains(i));
 			assertTrue(q.remove(i));
 			assertFalse(q.contains(i));
 			assertTrue(q.contains(i - 1));
 		}
-		for (int i = 0; i < SIZE; i += 2)
-		{
+		for (int i = 0; i < SIZE; i += 2) {
 			assertTrue(q.contains(i));
 			assertTrue(q.remove(i));
 			assertFalse(q.contains(i));
@@ -307,14 +281,12 @@ public class FastNavIntSetTest
 	 * contains(x) reports true when elements added but not yet removed
 	 */
 	@Test
-	public void testContains()
-	{
+	public void testContains() {
 		FastNavIntSet q = populatedSet(SIZE);
-		for (int i = 0; i < SIZE; ++i)
-		{
-			assertTrue(q.contains(new Integer(i)));
+		for (int i = 0; i < SIZE; ++i) {
+			assertTrue(q.contains(i));
 			q.pollFirst();
-			assertFalse(q.contains(new Integer(i)));
+			assertFalse(q.contains(i));
 		}
 	}
 
@@ -322,13 +294,12 @@ public class FastNavIntSetTest
 	 * clear removes all elements
 	 */
 	@Test
-	public void testClear()
-	{
+	public void testClear() {
 		FastNavIntSet q = populatedSet(SIZE);
 		q.clear();
 		assertTrue(q.isEmpty());
 		assertEquals(0, q.size());
-		q.add(new Integer(1));
+		q.add(1);
 		assertFalse(q.isEmpty());
 		q.clear();
 		assertTrue(q.isEmpty());
@@ -338,12 +309,10 @@ public class FastNavIntSetTest
 	 * containsAll(c) is true when c contains a subset of elements
 	 */
 	@Test
-	public void testContainsAll()
-	{
+	public void testContainsAll() {
 		FastNavIntSet q = populatedSet(SIZE);
 		FastNavIntSet p = FastNavIntSet.create();
-		for (int i = 0; i < SIZE; ++i)
-		{
+		for (int i = 0; i < SIZE; ++i) {
 			assertTrue(q.containsAll(p));
 			assertFalse(p.containsAll(q));
 			p.add(new Integer(i));
@@ -355,17 +324,17 @@ public class FastNavIntSetTest
 	 * retainAll(c) retains only those elements of c and reports true if changed
 	 */
 	@Test
-	public void testRetainAll()
-	{
+	public void testRetainAll() {
 		FastNavIntSet q = populatedSet(SIZE);
 		FastNavIntSet p = populatedSet(SIZE);
-		for (int i = 0; i < SIZE; ++i)
-		{
+		for (int i = 0; i < SIZE; ++i) {
 			boolean changed = q.retainAll(p);
-			if (i == 0)
+			if (i == 0) {
 				assertFalse(changed);
-			else
+			}
+			else {
 				assertTrue(changed);
+			}
 
 			assertTrue(q.containsAll(p));
 			assertEquals(SIZE - i, q.size());
@@ -377,16 +346,13 @@ public class FastNavIntSetTest
 	 * removeAll(c) removes only those elements of c and reports true if changed
 	 */
 	@Test
-	public void testRemoveAll()
-	{
-		for (int i = 1; i < SIZE; ++i)
-		{
+	public void testRemoveAll() {
+		for (int i = 1; i < SIZE; ++i) {
 			FastNavIntSet q = populatedSet(SIZE);
 			FastNavIntSet p = populatedSet(i);
 			assertTrue(q.removeAll(p));
 			assertEquals(SIZE - i, q.size());
-			for (int j = 0; j < i; ++j)
-			{
+			for (int j = 0; j < i; ++j) {
 				Integer x = (Integer) (p.pollFirst());
 				assertFalse(q.contains(x));
 			}
@@ -397,8 +363,7 @@ public class FastNavIntSetTest
 	 * lower returns preceding element
 	 */
 	@Test
-	public void testLower()
-	{
+	public void testLower() {
 		FastNavIntSet q = set5();
 		Object e1 = q.lower(3);
 		assertEquals(2, e1);
@@ -417,8 +382,7 @@ public class FastNavIntSetTest
 	 * higher returns next element
 	 */
 	@Test
-	public void testHigher()
-	{
+	public void testHigher() {
 		FastNavIntSet q = set5();
 		Object e1 = q.higher(3);
 		assertEquals(4, e1);
@@ -437,8 +401,7 @@ public class FastNavIntSetTest
 	 * floor returns preceding element
 	 */
 	@Test
-	public void testFloor()
-	{
+	public void testFloor() {
 		FastNavIntSet q = set5();
 		Object e1 = q.floor(3);
 		assertEquals(3, e1);
@@ -457,8 +420,7 @@ public class FastNavIntSetTest
 	 * ceiling returns next element
 	 */
 	@Test
-	public void testCeiling()
-	{
+	public void testCeiling() {
 		FastNavIntSet q = set5();
 		Object e1 = q.ceiling(3);
 		assertEquals(3, e1);
@@ -477,39 +439,58 @@ public class FastNavIntSetTest
 	 * toArray contains all elements in sorted order
 	 */
 	@Test
-	public void testToArray()
-	{
+	public void testToArray() {
 		FastNavIntSet q = populatedSet(SIZE);
 		Object[] o = q.toArray();
-		for (int i = 0; i < o.length; i++)
+		for (int i = 0; i < o.length; i++) {
 			assertSame(o[i], q.pollFirst());
+		}
 	}
 
 	/**
 	 * toArray(a) contains all elements in sorted order
 	 */
 	@Test
-	public void testToArray2()
-	{
+	public void testToArray2() {
 		FastNavIntSet q = populatedSet(SIZE);
 		Integer[] ints = new Integer[SIZE];
 		Integer[] array = q.toArray(ints);
 		assertSame(ints, array);
-		for (int i = 0; i < ints.length; i++)
+		for (int i = 0; i < ints.length; i++) {
 			assertSame(ints[i], q.pollFirst());
+		}
 	}
 
 	/**
 	 * iterator iterates through all elements
 	 */
 	@Test
-	public void testIterator()
-	{
+	public void testIterator() {
 		FastNavIntSet q = populatedSet(SIZE);
 		Iterator it = q.iterator();
 		int i;
-		for (i = 0; it.hasNext(); i++)
+		for (i = 0; it.hasNext(); i++) {
 			assertTrue(q.contains(it.next()));
+		}
+		assertEquals(i, SIZE);
+		assertFalse(it.hasNext());
+	}
+
+	/**
+	 * iterator iterates through all elements
+	 */
+	@Test
+	public void testDescendingIterator() {
+		FastNavIntSet q = populatedSet(SIZE);
+		Iterator<Integer> it = q.descendingIterator();
+		int i;
+		int lastValue = Integer.MAX_VALUE;
+		for (i = 0; it.hasNext(); i++) {
+			int nextValue = it.next();
+			assertTrue(String.format("%d > %d", lastValue, nextValue), lastValue > nextValue);
+			lastValue = nextValue;
+			assertTrue(q.contains(nextValue));
+		}
 		assertEquals(i, SIZE);
 		assertFalse(it.hasNext());
 	}
@@ -518,8 +499,7 @@ public class FastNavIntSetTest
 	 * iterator of empty set has no elements
 	 */
 	@Test
-	public void testEmptyIterator()
-	{
+	public void testEmptyIterator() {
 		assertFalse(FastNavIntSet.create().iterator().hasNext());
 	}
 
@@ -527,8 +507,7 @@ public class FastNavIntSetTest
 	 * iterator.remove removes current element
 	 */
 	@Test
-	public void testIteratorRemove()
-	{
+	public void testIteratorRemove() {
 		final FastNavIntSet q = FastNavIntSet.create();
 		q.add(new Integer(2));
 		q.add(new Integer(1));
@@ -548,12 +527,10 @@ public class FastNavIntSetTest
 	 * toString contains toStrings of elements
 	 */
 	@Test
-	public void testToString()
-	{
+	public void testToString() {
 		FastNavIntSet q = populatedSet(SIZE);
 		String s = q.toString();
-		for (int i = 0; i < SIZE; ++i)
-		{
+		for (int i = 0; i < SIZE; ++i) {
 			assertTrue(s.contains(String.valueOf(i)));
 		}
 	}
@@ -562,8 +539,7 @@ public class FastNavIntSetTest
 	 * A deserialized serialized set has same elements
 	 */
 	@Test
-	public void testSerialization() throws Exception
-	{
+	public void testSerialization() throws Exception {
 		NavigableSet x = populatedSet(SIZE);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ObjectOutputStream oout = new ObjectOutputStream(out);
@@ -576,8 +552,7 @@ public class FastNavIntSetTest
 		assertEquals(x.size(), y.size());
 		assertEquals(x, y);
 		assertEquals(y, x);
-		while (!x.isEmpty())
-		{
+		while (!x.isEmpty()) {
 			assertFalse(y.isEmpty());
 			assertEquals(x.pollFirst(), y.pollFirst());
 		}
@@ -588,8 +563,7 @@ public class FastNavIntSetTest
 	 * subSet returns set with keys in requested range
 	 */
 	@Test
-	public void testSubSetContents()
-	{
+	public void testSubSetContents() {
 		FastNavIntSet set = set5();
 		SortedSet sm = set.subSet(2, 4);
 		assertEquals(2, sm.first());
@@ -621,8 +595,7 @@ public class FastNavIntSetTest
 	}
 
 	@Test
-	public void testSubSetContents2()
-	{
+	public void testSubSetContents2() {
 		FastNavIntSet set = set5();
 		SortedSet sm = set.subSet(2, 3);
 		assertEquals(1, sm.size());
@@ -653,8 +626,7 @@ public class FastNavIntSetTest
 	 * headSet returns set with keys in requested range
 	 */
 	@Test
-	public void testHeadSetContents()
-	{
+	public void testHeadSetContents() {
 		FastNavIntSet set = set5();
 		SortedSet sm = set.headSet(4);
 		assertTrue(sm.contains(1));
@@ -674,15 +646,14 @@ public class FastNavIntSetTest
 		sm.clear();
 		assertTrue(sm.isEmpty());
 		assertEquals(2, set.size());
-		assertEquals((Object)4, set.first());
+		assertEquals((Object) 4, set.first());
 	}
 
 	/**
 	 * tailSet returns set with keys in requested range
 	 */
 	@Test
-	public void testTailSetContents()
-	{
+	public void testTailSetContents() {
 		FastNavIntSet set = set5();
 		SortedSet sm = set.tailSet(2);
 		assertFalse(sm.contains(1));
@@ -718,8 +689,7 @@ public class FastNavIntSetTest
 	 * Subsets of subsets subdivide correctly
 	 */
 	@Test
-	public void testRecursiveSubSets() throws Exception
-	{
+	public void testRecursiveSubSets() throws Exception {
 		int setSize = 100;
 
 		NavigableSet<Integer> set = FastNavIntSet.create();
@@ -734,15 +704,14 @@ public class FastNavIntSetTest
 		check(set.descendingSet(), 0, setSize - 1, false);
 
 		bashSubSet(set.subSet(0, true, setSize, false),
-			0, setSize - 1, true);
+							 0, setSize - 1, true);
 	}
 
 	/**
 	 * addAll is idempotent
 	 */
 	@Test
-	public void testAddAll_idempotent() throws Exception
-	{
+	public void testAddAll_idempotent() throws Exception {
 		Set x = populatedSet(SIZE);
 		Set y = FastNavIntSet.fromCollection(x);
 		y.addAll(x);
@@ -750,103 +719,86 @@ public class FastNavIntSetTest
 		assertEquals(y, x);
 	}
 
-	void populate(NavigableSet<Integer> set, int limit)
-	{
-		for (int i = 0, n = 2 * limit / 3; i < n; i++)
-		{
+	void populate(NavigableSet<Integer> set, int limit) {
+		for (int i = 0, n = 2 * limit / 3; i < n; i++) {
 			int element = rnd.nextInt(limit);
 			put(set, element);
 		}
 	}
 
-	void mutateSet(NavigableSet<Integer> set, int min, int max)
-	{
+	void mutateSet(NavigableSet<Integer> set, int min, int max) {
 		int size = set.size();
 		int rangeSize = max - min + 1;
 
 		// Remove a bunch of entries directly
-		for (int i = 0, n = rangeSize / 2; i < n; i++)
-		{
+		for (int i = 0, n = rangeSize / 2; i < n; i++) {
 			remove(set, min - 5 + rnd.nextInt(rangeSize + 10));
 		}
 
 		// Remove a bunch of entries with iterator
-		for (Iterator<Integer> it = set.iterator(); it.hasNext();)
-		{
-			if (rnd.nextBoolean())
-			{
+		for (Iterator<Integer> it = set.iterator(); it.hasNext();) {
+			if (rnd.nextBoolean()) {
 				bs.clear(it.next());
 				it.remove();
 			}
 		}
 
 		// Add entries till we're back to original size
-		while (set.size() < size)
-		{
+		while (set.size() < size) {
 			int element = min + rnd.nextInt(rangeSize);
 			assertTrue(element >= min && element <= max);
 			put(set, element);
 		}
 	}
 
-	void mutateSubSet(NavigableSet<Integer> set, int min, int max)
-	{
+	void mutateSubSet(NavigableSet<Integer> set, int min, int max) {
 		int size = set.size();
 		int rangeSize = max - min + 1;
 
 		// Remove a bunch of entries directly
-		for (int i = 0, n = rangeSize / 2; i < n; i++)
-		{
+		for (int i = 0, n = rangeSize / 2; i < n; i++) {
 			remove(set, min - 5 + rnd.nextInt(rangeSize + 10));
 		}
 
 		// Remove a bunch of entries with iterator
-		for (Iterator<Integer> it = set.iterator(); it.hasNext();)
-		{
-			if (rnd.nextBoolean())
-			{
+		for (Iterator<Integer> it = set.iterator(); it.hasNext();) {
+			if (rnd.nextBoolean()) {
 				bs.clear(it.next());
 				it.remove();
 			}
 		}
 
 		// Add entries till we're back to original size
-		while (set.size() < size)
-		{
+		while (set.size() < size) {
 			int element = min - 5 + rnd.nextInt(rangeSize + 10);
-			if (element >= min && element <= max)
-			{
+			if (element >= min && element <= max) {
 				put(set, element);
 			}
-			else
-			{
-				try
-				{
+			else {
+				try {
 					set.add(element);
 					Assert.fail();
 				}
-				catch (IllegalArgumentException success)
-				{
+				catch (IllegalArgumentException success) {
 				}
 			}
 		}
 	}
 
-	void put(NavigableSet<Integer> set, int element)
-	{
-		if (set.add(element))
+	void put(NavigableSet<Integer> set, int element) {
+		if (set.add(element)) {
 			bs.set(element);
+		}
 	}
 
-	void remove(NavigableSet<Integer> set, int element)
-	{
-		if (set.remove(element))
+	void remove(NavigableSet<Integer> set, int element) {
+		if (set.remove(element)) {
 			bs.clear(element);
+		}
 	}
 
 	void bashSubSet(NavigableSet<Integer> set,
-					int min, int max, boolean ascending)
-	{
+									int min, int max, boolean ascending) {
 		check(set, min, max, ascending);
 		check(set.descendingSet(), min, max, !ascending);
 
@@ -855,46 +807,49 @@ public class FastNavIntSetTest
 		check(set.descendingSet(), min, max, !ascending);
 
 		// Recurse
-		if (max - min < 2)
+		if (max - min < 2) {
 			return;
+		}
 		int midPoint = (min + max) / 2;
 
 		// headSet - pick direction and endpoint inclusion randomly
 		boolean incl = rnd.nextBoolean();
 		NavigableSet<Integer> hm = set.headSet(midPoint, incl);
-		if (ascending)
-		{
-			if (rnd.nextBoolean())
+		if (ascending) {
+			if (rnd.nextBoolean()) {
 				bashSubSet(hm, min, midPoint - (incl ? 0 : 1), true);
-			else
+			}
+			else {
 				bashSubSet(hm.descendingSet(), min, midPoint - (incl ? 0 : 1),
-					false);
+									 false);
+			}
 		}
-		else if (rnd.nextBoolean())
+		else if (rnd.nextBoolean()) {
 			bashSubSet(hm, midPoint + (incl ? 0 : 1), max, false);
-		else
+		}
+		else {
 			bashSubSet(hm.descendingSet(), midPoint + (incl ? 0 : 1), max,
-				true);
+								 true);
+		}
 
 		// tailSet - pick direction and endpoint inclusion randomly
 		incl = rnd.nextBoolean();
 		NavigableSet<Integer> tm = set.tailSet(midPoint, incl);
-		if (ascending)
-		{
-			if (rnd.nextBoolean())
+		if (ascending) {
+			if (rnd.nextBoolean()) {
 				bashSubSet(tm, midPoint + (incl ? 0 : 1), max, true);
-			else
+			}
+			else {
 				bashSubSet(tm.descendingSet(), midPoint + (incl ? 0 : 1), max,
-					false);
+									 false);
+			}
 		}
-		else if (rnd.nextBoolean())
-		{
+		else if (rnd.nextBoolean()) {
 			bashSubSet(tm, min, midPoint - (incl ? 0 : 1), false);
 		}
-		else
-		{
+		else {
 			bashSubSet(tm.descendingSet(), min, midPoint - (incl ? 0 : 1),
-				true);
+								 true);
 		}
 
 		// subSet - pick direction and endpoint inclusion randomly
@@ -905,27 +860,29 @@ public class FastNavIntSetTest
 		Arrays.sort(endpoints);
 		boolean lowIncl = rnd.nextBoolean();
 		boolean highIncl = rnd.nextBoolean();
-		if (ascending)
-		{
+		if (ascending) {
 			NavigableSet<Integer> sm = set.subSet(
 				endpoints[0], lowIncl, endpoints[1], highIncl);
-			if (rnd.nextBoolean())
+			if (rnd.nextBoolean()) {
 				bashSubSet(sm, endpoints[0] + (lowIncl ? 0 : 1),
-					endpoints[1] - (highIncl ? 0 : 1), true);
-			else
+									 endpoints[1] - (highIncl ? 0 : 1), true);
+			}
+			else {
 				bashSubSet(sm.descendingSet(), endpoints[0] + (lowIncl ? 0 : 1),
-					endpoints[1] - (highIncl ? 0 : 1), false);
+									 endpoints[1] - (highIncl ? 0 : 1), false);
+			}
 		}
-		else
-		{
+		else {
 			NavigableSet<Integer> sm = set.subSet(
 				endpoints[1], highIncl, endpoints[0], lowIncl);
-			if (rnd.nextBoolean())
+			if (rnd.nextBoolean()) {
 				bashSubSet(sm, endpoints[0] + (lowIncl ? 0 : 1),
-					endpoints[1] - (highIncl ? 0 : 1), false);
-			else
+									 endpoints[1] - (highIncl ? 0 : 1), false);
+			}
+			else {
 				bashSubSet(sm.descendingSet(), endpoints[0] + (lowIncl ? 0 : 1),
-					endpoints[1] - (highIncl ? 0 : 1), true);
+									 endpoints[1] - (highIncl ? 0 : 1), true);
+			}
 		}
 	}
 
@@ -933,89 +890,79 @@ public class FastNavIntSetTest
 	 * min and max are both inclusive. If max < min, interval is empty.
 	 */
 	void check(NavigableSet<Integer> set,
-			   final int min, final int max, final boolean ascending)
-	{
-		class ReferenceSet
-		{
-			int lower(int element)
-			{
+						 final int min, final int max, final boolean ascending) {
+		class ReferenceSet {
+			int lower(int element) {
 				return ascending
-					   ? lowerAscending(element) : higherAscending(element);
+							 ? lowerAscending(element) : higherAscending(element);
 			}
 
-			int floor(int element)
-			{
+			int floor(int element) {
 				return ascending
-					   ? floorAscending(element) : ceilingAscending(element);
+							 ? floorAscending(element) : ceilingAscending(element);
 			}
 
-			int ceiling(int element)
-			{
+			int ceiling(int element) {
 				return ascending
-					   ? ceilingAscending(element) : floorAscending(element);
+							 ? ceilingAscending(element) : floorAscending(element);
 			}
 
-			int higher(int element)
-			{
+			int higher(int element) {
 				return ascending
-					   ? higherAscending(element) : lowerAscending(element);
+							 ? higherAscending(element) : lowerAscending(element);
 			}
 
-			int first()
-			{
+			int first() {
 				return ascending ? firstAscending() : lastAscending();
 			}
 
-			int last()
-			{
+			int last() {
 				return ascending ? lastAscending() : firstAscending();
 			}
 
-			int lowerAscending(int element)
-			{
+			int lowerAscending(int element) {
 				return floorAscending(element - 1);
 			}
 
-			int floorAscending(int element)
-			{
-				if (element < min)
+			int floorAscending(int element) {
+				if (element < min) {
 					return -1;
-				else if (element > max)
+				}
+				else if (element > max) {
 					element = max;
+				}
 
 				// BitSet should support this! Test would run much faster
-				while (element >= min)
-				{
-					if (bs.get(element))
+				while (element >= min) {
+					if (bs.get(element)) {
 						return element;
+					}
 					element--;
 				}
 				return -1;
 			}
 
-			int ceilingAscending(int element)
-			{
-				if (element < min)
+			int ceilingAscending(int element) {
+				if (element < min) {
 					element = min;
-				else if (element > max)
+				}
+				else if (element > max) {
 					return -1;
+				}
 				int result = bs.nextSetBit(element);
 				return (result > max) ? -1 : result;
 			}
 
-			int higherAscending(int element)
-			{
+			int higherAscending(int element) {
 				return ceilingAscending(element + 1);
 			}
 
-			private int firstAscending()
-			{
+			private int firstAscending() {
 				int result = ceilingAscending(min);
 				return (result > max) ? -1 : result;
 			}
 
-			private int lastAscending()
-			{
+			private int lastAscending() {
 				int result = floorAscending(max);
 				return (result < min) ? -1 : result;
 			}
@@ -1024,31 +971,29 @@ public class FastNavIntSetTest
 
 		// Test contents using containsElement
 		int size = 0;
-		for (int i = min; i <= max; i++)
-		{
+		for (int i = min; i <= max; i++) {
 			boolean bsContainsI = bs.get(i);
 			assertEquals(bsContainsI, set.contains(i));
-			if (bsContainsI)
+			if (bsContainsI) {
 				size++;
+			}
 		}
 		assertEquals(size, set.size());
 
 		// Test contents using contains elementSet iterator
 		int size2 = 0;
 		int previousElement = -1;
-		for (int element : set)
-		{
+		for (int element : set) {
 			assertTrue(bs.get(element));
 			size2++;
 			assertTrue(previousElement < 0 || (ascending
-											   ? element - previousElement > 0 : element - previousElement < 0));
+																				 ? element - previousElement > 0 : element - previousElement < 0));
 			previousElement = element;
 		}
 		assertEquals(size2, size);
 
 		// Test navigation ops
-		for (int element = min - 1; element <= max + 1; element++)
-		{
+		for (int element = min - 1; element <= max + 1; element++) {
 			assertEq(set.lower(element), rs.lower(element));
 			assertEq(set.floor(element), rs.floor(element));
 			assertEq(set.higher(element), rs.higher(element));
@@ -1056,44 +1001,38 @@ public class FastNavIntSetTest
 		}
 
 		// Test extrema
-		if (set.size() != 0)
-		{
+		if (set.size() != 0) {
 			assertEq(set.first(), rs.first());
 			assertEq(set.last(), rs.last());
 		}
-		else
-		{
+		else {
 			assertEq(rs.first(), -1);
 			assertEq(rs.last(), -1);
-			try
-			{
+			try {
 				set.first();
 				Assert.fail();
 			}
-			catch (NoSuchElementException success)
-			{
+			catch (NoSuchElementException success) {
 			}
-			try
-			{
+			try {
 				set.last();
 				Assert.fail();
 			}
-			catch (NoSuchElementException success)
-			{
+			catch (NoSuchElementException success) {
 			}
 		}
 	}
 
-	static void assertEq(Integer i, int j)
-	{
-		if (i == null)
+	static void assertEq(Integer i, int j) {
+		if (i == null) {
 			assertEquals(j, -1);
-		else
+		}
+		else {
 			assertEquals((int) i, j);
+		}
 	}
 
-	static boolean eq(Integer i, int j)
-	{
+	static boolean eq(Integer i, int j) {
 		return (i == null) ? j == -1 : i == j;
 	}
 
