@@ -26,7 +26,7 @@ public class Main {
 			for (int s : randArray) {
 				fastNavSet.lower(s);
 			}
-		}, "lower fast", 1, TimeUnit.SECONDS, 4);
+		}, "lower fast", 1, TimeUnit.SECONDS, 400);
 		benchmark(() -> {
 			for (int s : randArray) {
 				treeSet.lower(s);

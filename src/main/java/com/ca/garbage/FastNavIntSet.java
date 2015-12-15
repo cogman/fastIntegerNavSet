@@ -42,7 +42,7 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 		else {
 			this.size = 0;
 			this.values = new int[0];
-			addAll(set);
+			FastNavIntSet.this.addAll(set);
 		}
 		this.forward = forward;
 	}
@@ -284,7 +284,9 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 
 	@Override
 	public NavigableSet<Integer> descendingSet() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return FastIntSetView.make(this)
+			.setReversed(true)
+			.build();
 	}
 
 	@Override
@@ -356,9 +358,14 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	}
 
 	@Override
-	public NavigableSet<Integer> headSet(Integer toElement, boolean inclusive
-	) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public NavigableSet<Integer> headSet(Integer toElement, boolean inclusive) {
+		if (toElement == null) {
+			throw new NullPointerException("toElement can't be null!");
+		}
+		return FastIntSetView.make(this)
+			.setUpperBound(toElement)
+			.setUpperBoundInclusive(inclusive)
+			.build();
 	}
 
 	@Override
@@ -586,32 +593,45 @@ public class FastNavIntSet extends AbstractSet<Integer> implements NavigableSet<
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> c) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
 	public int size() {
 		return size;
 	}
 
 	@Override
-	public FastNavIntSet subSet(Integer fromElement, boolean fromInclusive, Integer toElement, boolean toInclusive) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public NavigableSet<Integer> subSet(Integer fromElement, boolean fromInclusive, Integer toElement, boolean toInclusive) {
+		if (fromElement == null) {
+			throw new NullPointerException("fromElement can't be null");
+		}
+		if (toElement == null) {
+			throw new NullPointerException("toElement can't be null");
+		}
+		return FastIntSetView.make(this)
+			.setLowerBound(fromElement)
+			.setLowerBoundInclusive(fromInclusive)
+			.setUpperBound(toElement)
+			.setUpperBoundInclusive(toInclusive)
+			.build();
 	}
 
 	@Override
-	public FastNavIntSet subSet(Integer fromElement, Integer toElement) {
+	public NavigableSet<Integer> subSet(Integer fromElement, Integer toElement) {
 		return subSet(fromElement, true, toElement, false);
 	}
 
 	@Override
-	public FastNavIntSet tailSet(Integer fromElement, boolean inclusive) {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	public NavigableSet<Integer> tailSet(Integer fromElement, boolean inclusive) {
+		if (fromElement == null) {
+			throw new NullPointerException("from element can't be null");
+		}
+		return FastIntSetView
+			.make(this)
+			.setLowerBound(fromElement)
+			.setLowerBoundInclusive(inclusive)
+			.build();
 	}
 
 	@Override
-	public FastNavIntSet tailSet(Integer fromElement) {
+	public NavigableSet<Integer> tailSet(Integer fromElement) {
 		return tailSet(fromElement, true);
 	}
 
